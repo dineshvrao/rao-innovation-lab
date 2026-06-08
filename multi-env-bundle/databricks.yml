@@ -1,0 +1,101 @@
+# Databricks Asset Bundle Configuration
+# This bundle demonstrates DEV, TEST, and PROD environment separation
+
+bundle:
+  name: multi_env_demo
+
+# Variables that can be overridden per environment
+variables:
+  catalog:
+    description: "Unity Catalog name for this environment"
+    default: "main"
+  
+  schema_prefix:
+    description: "Schema prefix for environment isolation"
+    default: "dev"
+  
+  cluster_size:
+    description: "Cluster node type"
+    default: "i3.xlarge"
+  
+  max_workers:
+    description: "Maximum number of workers"
+    default: 1
+
+# Include resource definitions
+include:
+  - resources/*.yml
+
+# Target configurations for different environments
+targets:
+  # Development Environment
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-4b1ecb7b-9c81.cloud.databricks.com
+      root_path: /Users/dineshv.rao7@outlook.com/.bundle/${bundle.name}/dev
+    
+    variables:
+      catalog: "main"
+      schema_prefix: "dev"
+      cluster_size: "i3.xlarge"
+      max_workers: 1
+    
+    # Development-specific resource overrides
+    resources:
+      jobs:
+        data_processing_job:
+          name: "[DEV] ${bundle.name} - Data Processing"
+          schedule:
+            # Less frequent in dev
+            quartz_cron_expression: "0 0 8 * * ?"
+            timezone_id: "America/Los_Angeles"
+
+  # Test/Staging Environment
+  test:
+    mode: production
+    workspace:
+      host: https://dbc-4b1ecb7b-9c81.cloud.databricks.com
+      root_path: /Users/dineshv.rao7@outlook.com/.bundle/${bundle.name}/test
+    
+    variables:
+      catalog: "main"
+      schema_prefix: "test"
+      cluster_size: "i3.xlarge"
+      max_workers: 2
+    
+    resources:
+      jobs:
+        data_processing_job:
+          name: "[TEST] ${bundle.name} - Data Processing"
+          schedule:
+            quartz_cron_expression: "0 0 6 * * ?"
+            timezone_id: "America/Los_Angeles"
+
+  # Production Environment
+  prod:
+    mode: production
+    workspace:
+      host: https://dbc-4b1ecb7b-9c81.cloud.databricks.com
+      root_path: /Users/dineshv.rao7@outlook.com/.bundle/${bundle.name}/prod
+    
+    variables:
+      catalog: "main"
+      schema_prefix: "prod"
+      cluster_size: "i3.2xlarge"
+      max_workers: 4
+    
+    resources:
+      jobs:
+        data_processing_job:
+          name: "[PROD] ${bundle.name} - Data Processing"
+          schedule:
+            quartz_cron_expression: "0 0 2 * * ?"
+            timezone_id: "America/Los_Angeles"
+          
+          # Production can have additional settings
+          max_concurrent_runs: 1
+          email_notifications:
+            on_failure:
+              - "dineshv.rao7@outlook.com"

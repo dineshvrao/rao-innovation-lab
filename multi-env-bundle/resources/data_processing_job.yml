@@ -1,0 +1,52 @@
+# Job Resource Definition
+# This job will be deployed with environment-specific configurations
+
+resources:
+  jobs:
+    data_processing_job:
+      name: "${bundle.name} - Data Processing"
+      
+      tasks:
+        - task_key: process_data
+          notebook_task:
+            notebook_path: ../src/data_processing.py
+            base_parameters:
+              # Pass environment variables to notebook
+              catalog: "${var.catalog}"
+              schema: "${var.schema_prefix}_analytics"
+              environment: "${bundle.target}"
+          
+          new_cluster:
+            spark_version: "13.3.x-scala2.12"
+            node_type_id: "${var.cluster_size}"
+            num_workers: "${var.max_workers}"
+            
+            # Enable autoscaling in production
+            autoscale:
+              min_workers: 1
+              max_workers: "${var.max_workers}"
+            
+            spark_conf:
+              "spark.databricks.delta.optimizeWrite.enabled": "true"
+              "spark.databricks.delta.autoCompact.enabled": "true"
+          
+          timeout_seconds: 3600
+          max_retries: 2
+          retry_on_timeout: true
+      
+      # Default schedule (can be overridden per target)
+      schedule:
+        quartz_cron_expression: "0 0 2 * * ?"
+        timezone_id: "America/Los_Angeles"
+        pause_status: "UNPAUSED"
+      
+      # Email notifications
+      email_notifications:
+        on_failure:
+          - "${workspace.current_user.userName}"
+      
+      # Tags for resource management
+      tags:
+        environment: "${bundle.target}"
+        project: "${bundle.name}"
+        managed_by: "databricks_asset_bundle"

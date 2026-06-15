@@ -12,23 +12,9 @@ resources:
             notebook_path: ../src/data_processing.py
             base_parameters:
               # Pass environment variables to notebook
-              catalog: "${var.catalog}"
-              schema: "${var.schema_prefix}_analytics"
+              database_name: "${var.database_name}"
               environment: "${bundle.target}"
-          
-          new_cluster:
-            spark_version: "13.3.x-scala2.12"
-            node_type_id: "${var.cluster_size}"
-            num_workers: "${var.max_workers}"
-            
-            # Enable autoscaling in production
-            autoscale:
-              min_workers: 1
-              max_workers: "${var.max_workers}"
-            
-            spark_conf:
-              "spark.databricks.delta.optimizeWrite.enabled": "true"
-              "spark.databricks.delta.autoCompact.enabled": "true"
+            source: WORKSPACE
           
           timeout_seconds: 3600
           max_retries: 2

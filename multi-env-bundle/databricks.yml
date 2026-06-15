@@ -1,26 +1,15 @@
 # Databricks Asset Bundle Configuration
 # This bundle demonstrates DEV, TEST, and PROD environment separation
+# Configured for Databricks Free Edition (Hive metastore)
 
 bundle:
   name: multi_env_demo
 
 # Variables that can be overridden per environment
 variables:
-  catalog:
-    description: "Unity Catalog name for this environment"
-    default: "main"
-  
-  schema_prefix:
-    description: "Schema prefix for environment isolation"
-    default: "dev"
-  
-  cluster_size:
-    description: "Cluster node type"
-    default: "i3.xlarge"
-  
-  max_workers:
-    description: "Maximum number of workers"
-    default: 1
+  database_name:
+    description: "Database (schema) name for this environment"
+    default: "dev_analytics"
 
 # Include resource definitions
 include:
@@ -37,10 +26,7 @@ targets:
       root_path: /Users/dineshv.rao7@outlook.com/.bundle/${bundle.name}/dev
     
     variables:
-      catalog: "main"
-      schema_prefix: "dev"
-      cluster_size: "i3.xlarge"
-      max_workers: 1
+      database_name: "dev_analytics"
     
     # Development-specific resource overrides
     resources:
@@ -60,10 +46,7 @@ targets:
       root_path: /Users/dineshv.rao7@outlook.com/.bundle/${bundle.name}/test
     
     variables:
-      catalog: "main"
-      schema_prefix: "test"
-      cluster_size: "i3.xlarge"
-      max_workers: 2
+      database_name: "test_analytics"
     
     resources:
       jobs:
@@ -81,10 +64,7 @@ targets:
       root_path: /Users/dineshv.rao7@outlook.com/.bundle/${bundle.name}/prod
     
     variables:
-      catalog: "main"
-      schema_prefix: "prod"
-      cluster_size: "i3.2xlarge"
-      max_workers: 4
+      database_name: "prod_analytics"
     
     resources:
       jobs:

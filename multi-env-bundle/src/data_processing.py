@@ -3,6 +3,8 @@
 # MAGIC # Data Processing - Environment Aware
 # MAGIC This notebook demonstrates environment-specific processing logic.
 # MAGIC It receives environment parameters from the job definition.
+# MAGIC 
+# MAGIC **Note**: This version is configured for Databricks Free Edition (Hive metastore)
 
 # COMMAND ----------
 
@@ -15,12 +17,11 @@ import os
 from datetime import datetime
 
 # Get parameters from job (passed via databricks.yml variables)
-catalog = dbutils.widgets.get("catalog")
-schema = dbutils.widgets.get("schema")
+database_name = dbutils.widgets.get("database_name")
 environment = dbutils.widgets.get("environment")
 
 print(f"Running in {environment.upper()} environment")
-print(f"Target: {catalog}.{schema}")
+print(f"Target database: {database_name}")
 print(f"Timestamp: {datetime.now()}")
 
 # COMMAND ----------
@@ -52,15 +53,15 @@ else:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Create Schema if Not Exists
+# MAGIC ## Create Database if Not Exists
 
 # COMMAND ----------
 
-# Create schema for this environment
-spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog}.{schema}")
-spark.sql(f"USE {catalog}.{schema}")
+# Create database for this environment (Hive metastore)
+spark.sql(f"CREATE DATABASE IF NOT EXISTS {database_name}")
+spark.sql(f"USE {database_name}")
 
-print(f"Using schema: {catalog}.{schema}")
+print(f"Using database: {database_name}")
 
 # COMMAND ----------
 
@@ -96,7 +97,7 @@ print(f"Sampled records: {df_sampled.count()}")
 # COMMAND ----------
 
 # Write to environment-specific table
-table_name = f"{catalog}.{schema}.processed_data"
+table_name = f"{database_name}.processed_data"
 
 df_sampled \
     .withColumn("processed_at", F.current_timestamp()) \
@@ -144,3 +145,4 @@ else:
 print(f"\n{'='*50}")
 print(f"SUCCESS: {environment.upper()} processing completed")
 print(f"{'='*50}")
+
